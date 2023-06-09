@@ -5,7 +5,6 @@
 
 Проект реализован на `Django` и `DjangoRestFramework`.
 Проект доступен по [адресу](https://51.250.101.113)
-Документация к API доступна [здесь](https://51.250.101.113/api/docs/)
 
 ## Технологии
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
