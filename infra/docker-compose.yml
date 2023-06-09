@@ -26,8 +26,6 @@ services:
     image: dmay92/foodgram-frontend:v1.00.0000
     volumes:
       - ../frontend/:/app/result_build/
-    env_file:
-      - ./.env
     depends_on:
       - backend
 
