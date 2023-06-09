@@ -14,9 +14,8 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.51.250.101.113',
-    'https://*.127.0.0.1',
-    'http://localhost/*',
+    'https://51.250.101.113/*',
+    'http://51.250.101.113/*',
 ]
 
 INSTALLED_APPS = [
