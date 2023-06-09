@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from foodgram.settings import EMPTY_VALUE
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -99,7 +98,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 @admin.register(RecipeIngredient)
-class Recipe_IngredientsAdmin(admin.ModelAdmin):
+class RecipeIngredientsAdmin(admin.ModelAdmin):
     """Класс администрирования ингредиентов определенного рецепта."""
 
     list_display = (
