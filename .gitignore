@@ -133,3 +133,5 @@ dmypy.json
 .DS_Store
 .vs_code
 
+/static
+
