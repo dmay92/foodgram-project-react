@@ -29,6 +29,7 @@ class UserVS(
     """Класс viewset для модели пользователя."""
 
     queryset = User.objects.all()
+    permission_classes = (permissions.AllowAny,)
 
     def get_serializer_class(self):
         if self.action == 'create':
