@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+
 from users.models import User
 
 
@@ -94,7 +95,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='Recipe_ingredient',
+        through='RecipeIngredient',
         related_name='recipes',
         verbose_name='Ингредиенты'
     )
@@ -125,7 +126,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Recipe_ingredient(models.Model):
+class RecipeIngredient(models.Model):
     """Класс модели ингредиентов определенного рецепта."""
 
     recipe = models.ForeignKey(
@@ -191,7 +192,7 @@ class Favorite(models.Model):
         return f'{self.user} добавил {self.recipe} в избранное'
 
 
-class Shopping_cart(models.Model):
+class ShoppingCart(models.Model):
     """Класс модели корзины пользователя."""
 
     user = models.ForeignKey(

@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import (CurrentPasswordSerializer, PasswordSerializer,
                                 UserCreateSerializer, UserSerializer)
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import Ingredient, Recipe, Recipe_ingredient, Tag
 from rest_framework import serializers
+
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
 
 
@@ -99,7 +100,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
         source='ingredient.measurement_unit')
 
     class Meta:
-        model = Recipe_ingredient
+        model = RecipeIngredient
         fields = (
             'id',
             'name',
@@ -157,7 +158,7 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.SerializerMethodField()
 
     class Meta:
-        model = Recipe_ingredient
+        model = RecipeIngredient
         fields = (
             'id',
             'amount',
@@ -166,12 +167,10 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def get_name(self, obj):
-        name = obj.ingredient.name
-        return name
+        return obj.ingredient.name
 
     def get_measurement_unit(self, obj):
-        measurement_unit = obj.ingredient.measurement_unit
-        return measurement_unit
+        return obj.ingredient.measurement_unit
 
 
 class RecipeCreateSerializer(RecipeSerializer):
@@ -229,7 +228,7 @@ class RecipeCreateSerializer(RecipeSerializer):
 
     def set_recipe_ingredient(self, ingredients, recipe):
         for ingredient in ingredients:
-            ing, _ = Recipe_ingredient.objects.get_or_create(
+            ing, _ = RecipeIngredient.objects.get_or_create(
                 ingredient=get_object_or_404(
                     Ingredient.objects.filter(id=ingredient['id'])
                 ),

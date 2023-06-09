@@ -1,16 +1,17 @@
 from django.contrib import admin
+
 from foodgram.settings import EMPTY_VALUE
 
-from .models import (Favorite, Ingredient, Recipe, Recipe_ingredient,
-                     Shopping_cart, Tag)
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 
 admin.site.site_header = 'Администрирование Foodgram'
 
 
-class Recipe_IngredientsInline(admin.TabularInline):
+class RecipeIngredientsInline(admin.TabularInline):
     """Inline класс администрирования ингредиентов определенного рецепта."""
 
-    model = Recipe_ingredient
+    model = RecipeIngredient
     extra = 1
 
 
@@ -32,7 +33,7 @@ class IngredientAdmin(admin.ModelAdmin):
         'measurement_unit',
     )
     ordering = ('id',)
-    inlines = (Recipe_IngredientsInline,)
+    inlines = (RecipeIngredientsInline,)
     empty_value_display = EMPTY_VALUE
 
 
@@ -88,7 +89,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'author',
         'tags',
     )
-    inlines = (Recipe_IngredientsInline,)
+    inlines = (RecipeIngredientsInline,)
     ordering = ('name',)
     empty_value_display = EMPTY_VALUE
 
@@ -97,7 +98,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return obj.favorites.count()
 
 
-@admin.register(Recipe_ingredient)
+@admin.register(RecipeIngredient)
 class Recipe_IngredientsAdmin(admin.ModelAdmin):
     """Класс администрирования ингредиентов определенного рецепта."""
 
@@ -140,7 +141,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     empty_value_display = EMPTY_VALUE
 
 
-@admin.register(Shopping_cart)
+@admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
     """Класс администрирования пользовательских корзин."""
 
