@@ -12,12 +12,12 @@ from rest_framework.response import Response
 from users.models import Subscribe, User
 
 from .filters import IngredientFilter, RecipeFilter
+from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateUserSerializer, CustomPasswordSerializer,
                           CustomUserSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
-                          RecipeSubscribeSerializer, SubscribeSerializer,
-                          TagSerializer)
+                          SubscribeSerializer, TagSerializer)
 
 
 class UserVS(
@@ -29,6 +29,7 @@ class UserVS(
     """Класс viewset для модели пользователя."""
 
     queryset = User.objects.all()
+    pagination_class = CustomPagination
     permission_classes = (permissions.AllowAny,)
 
     def get_serializer_class(self):
@@ -161,86 +162,73 @@ class RecipeVS(viewsets.ModelViewSet):
 
     http_method_names = ('get', 'post', 'patch', 'delete',)
     queryset = Recipe.objects.all()
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
-        IsAuthorOrReadOnly,
-    )
+    pagination_class = CustomPagination
+    permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
-
     def get_serializer_class(self):
         if self.action in (
-            'create',
-            'partial_update',
+            'list',
+            'retrieve',
         ):
-            return RecipeCreateSerializer
-        return RecipeSerializer
+            return RecipeSerializer
+        return RecipeCreateSerializer
 
-    def create_update_delete(self, model, recipe, request):
-        instance = model.objects.filter(recipe=recipe, user=request.user)
-        if not instance and request.method == 'DELETE':
-            return Response(
-                {'errors': 'Рецепт отсутствует, удалять нечего.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    @action(methods=['post', 'delete'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,))
+    def favorite(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
+
+        if request.method == 'POST':
+            serializer = RecipeSerializer(recipe, data=request.data,
+                                          context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            if not Favorite.objects.filter(user=request.user,
+                                           recipe=recipe).exists():
+                Favorite.objects.create(user=request.user, recipe=recipe)
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
+            return Response({'errors': 'Рецепт уже в избранном.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if request.method == 'DELETE':
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        if instance:
+            get_object_or_404(Favorite, user=request.user,
+                              recipe=recipe).delete()
+            return Response({'detail': 'Рецепт успешно удален из избранного.'},
+                            status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=(permissions.IsAuthenticated,),
+            pagination_class=None)
+    def shopping_cart(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
+
+        if request.method == 'POST':
+            serializer = RecipeSerializer(recipe, data=request.data,
+                                          context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            if not ShoppingCart.objects.filter(user=request.user,
+                                               recipe=recipe).exists():
+                ShoppingCart.objects.create(user=request.user, recipe=recipe)
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
+            return Response({'errors': 'Рецепт уже в списке покупок.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'DELETE':
+            get_object_or_404(ShoppingCart, user=request.user,
+                              recipe=recipe).delete()
             return Response(
-                {'errors': 'Рецепт уже добавлен.'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'detail': 'Рецепт успешно удален из списка покупок.'},
+                status=status.HTTP_204_NO_CONTENT
             )
-        model.objects.create(user=request.user, recipe=recipe)
-        serializer = RecipeSubscribeSerializer(
-            recipe,
-            context={
-                'request': request,
-                'format': self.format_kwarg,
-                'view': self
-            }
-        )
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
-
-    @action(
-        methods=('post', 'delete',),
-        detail=True,
-        permission_classes=(permissions.IsAuthenticated,)
-    )
-    def favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        return self.create_update_delete(
-            Favorite,
-            recipe,
-            request
-        )
-
-    @action(
-        methods=('post', 'delete',),
-        detail=True,
-        permission_classes=(permissions.IsAuthenticated,)
-    )
-    def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        return self.create_update_delete(
-            ShoppingCart,
-            recipe,
-            request
-        )
 
     @action(
         methods=('get',),
         detail=False,
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
         user = request.user

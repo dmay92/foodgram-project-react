@@ -73,21 +73,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         read_only_fields = '__all__',
 
 
-class RecipeSubscribeSerializer(serializers.ModelSerializer):
-    """Сериализатор отображения рецептов на странице подписок."""
-
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time',
-        )
-
-
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор отображения ингредиентов рецепта."""
 
@@ -195,30 +180,49 @@ class RecipeCreateSerializer(RecipeSerializer):
             'cooking_time',
         )
 
-    def validate(self, attrs):
-        if len(attrs['tags']) > len(set(attrs['tags'])):
-            raise serializers.ValidationError(
-                'Unable to add the same tag multiple times.'
-            )
+    def validate_ingredients(self, value):
+        ingredients = value
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': 'Нужен хотя бы один ингредиент!'
+            })
+        ingredients_list = []
+        for item in ingredients:
+            ingredient = get_object_or_404(Ingredient, id=item['id'])
+            if ingredient in ingredients_list:
+                raise serializers.ValidationError({
+                    'ingredients': 'Ингридиенты не могут повторяться!'
+                })
+            if int(item['amount']) <= 0:
+                raise serializers.ValidationError({
+                    'amount': 'Количество ингредиента должно быть больше 0!'
+                })
+            ingredients_list.append(ingredient)
+        return value
 
-        ingredients = [
-            item['ingredient'] for item in attrs['recipe_ingredients']]
-        if len(ingredients) > len(set(ingredients)):
-            raise serializers.ValidationError(
-                'Unable to add the same ingredient multiple times.'
-            )
-
-        return attrs
+    def validate_tags(self, value):
+        tags = value
+        if not tags:
+            raise serializers.ValidationError({
+                'tags': 'Нужно выбрать хотя бы один тег!'
+            })
+        tags_list = []
+        for tag in tags:
+            if tag in tags_list:
+                raise serializers.ValidationError({
+                    'tags': 'Теги должны быть уникальными!'
+                })
+            tags_list.append(tag)
+        return value
 
     def set_recipe_ingredient(self, ingredients, recipe):
-        for ingredient in ingredients:
-            ing, _ = RecipeIngredient.objects.get_or_create(
-                ingredient=get_object_or_404(
-                    Ingredient.objects.filter(id=ingredient['id'])
-                ),
-                amount=ingredient['amount'],
-            )
-            recipe.ingredients.add(ing.id)
+        RecipeIngredient.objects.bulk_create(
+            [RecipeIngredient(
+                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                recipe=recipe,
+                amount=ingredient['amount']
+            ) for ingredient in ingredients]
+        )
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -241,7 +245,8 @@ class RecipeCreateSerializer(RecipeSerializer):
             ingredients=ingredients,
             recipe=instance
         )
-        return super().update(instance, validated_data)
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         request = self.context.get('request')
@@ -292,7 +297,7 @@ class SubscribeSerializer(CustomUserSerializer):
             recipes = obj.recipes.all()[:int(recipes_limit)]
         else:
             recipes = obj.recipes.all()
-        serialized_result = RecipeSubscribeSerializer(
+        serialized_result = RecipeSerializer(
             recipes,
             many=True,
             read_only=True
