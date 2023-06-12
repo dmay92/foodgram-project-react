@@ -129,9 +129,10 @@ dmypy.json
 .pyre/
 
 # .idea
-.idea
-.DS_Store
-.vs_code
+.idea/
+.DS_Store/
+.vs_code/
 
 /static
+/media
 

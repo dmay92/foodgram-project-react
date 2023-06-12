@@ -4,42 +4,20 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(
-    'ingredients',
-    views.IngredientsVS,
-    basename='ingredients'
-)
-router.register(
-    'recipes',
-    views.RecipeVS,
-    basename='recipes'
-)
-router.register(
-    'tags',
-    views.TagVS,
-    basename='tags'
-)
-router.register(
-    'users',
-    views.UserVS,
-    basename='users'
-)
+router.register('ingredients',
+                views.IngredientViewSet, basename='ingredients')
+router.register('recipes',
+                views.RecipeViewSet, basename='recipes')
+router.register('tags',
+                views.TagViewSet, basename='tags')
+router.register('users',
+                views.UserViewSet, basename='users')
+router.register(r'^recipes/(?P<recipe_id>\d+)/favorite',
+                views.FavoriteViewSet, basename='favorite')
+router.register(r'^recipes/(?P<recipe_id>\d+)/shopping_cart',
+                views.ShoppingCartViewSet, basename='shopping_cart')
 
 urlpatterns = [
-    path(
-        'users/me/',
-        views.UserSelfView.as_view()
-    ),
-    path(
-        'users/set_password/',
-        views.UserSetPasswordView.as_view()
-    ),
-    path(
-        '',
-        include(router.urls)
-    ),
-    path(
-        'auth/',
-        include('djoser.urls.authtoken')
-    )
+    path('', include(router.urls)),
+    path('auth/', include('djoser.urls.authtoken'))
 ]

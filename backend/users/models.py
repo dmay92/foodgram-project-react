@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """Класс Модели пользователя."""
+    """Класс модели пользователя."""
 
     username = models.CharField(
         verbose_name='Логин',
@@ -35,8 +35,8 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
+
     REQUIRED_FIELDS = ('username',
-                       'password',
                        'first_name',
                        'last_name',)
 
@@ -55,30 +55,19 @@ class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower',
+        related_name='subscriber',
         verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following',
+        related_name='subscribe',
         verbose_name='Автор'
     )
 
     class Meta:
-        ordering = ('-id',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='unique_follow'
-            ),
-            models.CheckConstraint(
-                check=~models.Q(user=models.F('author')),
-                name='self_subscription_restrict'
-            )
-        ]
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
