@@ -27,11 +27,42 @@ jobs:
         run: |
           python -m flake8 backend
 
+  copy_redoc_files:
+    name: Copy api documentation to the server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: copy files via ssh key
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: 'docs/*'
+          target: './docs/'
+
+  copy_project_files:
+    name: Copy project files to the server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: copy files via ssh key
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: 'infra/docker-compose.yml, infra/nginx.conf'
+          target: './docs/'
+
+
   build_and_push_backend_to_docker_hub:
     name: Pushing backend image to Docker Hub
     runs-on: ubuntu-latest
     needs:
       - tests
+      - copy_redoc_files
+      - copy_project_files
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -54,6 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - tests
+      - copy_redoc_files
+      - copy_project_files
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -76,6 +109,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - tests
+      - copy_redoc_files
+      - copy_project_files
       - build_and_push_backend_to_docker_hub
       - build_and_push_frontend_to_docker_hub
     steps:
@@ -107,6 +142,10 @@ jobs:
             sudo docker-compose pull frontend
             
             sudo docker-compose up -d --build
+
+            sudo docker-compose exec backend python manage.py makemigrations
+            sudo docker-compose exec backend python manage.py migrate --noinput
+            sudo docker-compose exec backend python manage.py collectstatic --no-input
   
   send_message:
     name: Sending Telegram message

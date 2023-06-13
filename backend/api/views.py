@@ -27,6 +27,7 @@ class UserViewSet(UserViewSet):
         methods=['POST', 'DELETE']
     )
     def subscribe(self, request, id=None):
+        """Функция обработки подписок с валидациями."""
         user = request.user
         author = get_object_or_404(User, id=id)
         if self.request.method == 'POST':
@@ -68,6 +69,8 @@ class UserViewSet(UserViewSet):
         methods=['GET']
     )
     def subscriptions(self, request):
+        """Функция получения подписок пользователя."""
+
         user = request.user
         queryset = Subscribe.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
@@ -109,6 +112,8 @@ class FavoriteViewSet(mixins.CreateModelMixin,
     permission_classes = (permissions.IsAuthenticated,)
 
     def create(self, request, recipe_id):
+        """Функция добавления рецепта в избранное с валидациями."""
+
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
             return Response(
@@ -120,6 +125,8 @@ class FavoriteViewSet(mixins.CreateModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, recipe_id):
+        """Функция удаления рецепта из избранного с валидациями."""
+
         user = request.user
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         if not Favorite.objects.filter(user=user, recipe=recipe).exists():
@@ -140,6 +147,8 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def create(self, request, recipe_id):
+        """Функция добавления рецепта в корзину с валидациями."""
+
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         if ShoppingCart.objects.filter(
             user=request.user, recipe=recipe
@@ -153,6 +162,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, recipe_id):
+        """Функция удаления рецепта из избранного с валидациями."""
         user = request.user
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         if not ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
@@ -175,6 +185,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
+        """Функция выбора сериализатора по выполняемому запросу."""
         if self.action in ('list', 'retrieve'):
             return RecipeSerializer
         return RecipeCreateSerializer
@@ -184,6 +195,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=(permissions.IsAuthenticated,))
     def download_shopping_cart(self, request):
+        """Функция создания и скачивания файла корзины пользователя."""
+
         ingredients = ShoppingCart.objects.filter(
             user=request.user
         ).values(

@@ -21,6 +21,8 @@ class UserSerializer(UserSerializer):
                   'is_subscribed',)
 
     def get_is_subscribed(self, obj):
+        """"Функция проверки на наличия в подписках."""
+
         if (self.context.get('request')
            and not self.context['request'].user.is_anonymous):
             return Subscribe.objects.filter(user=self.context['request'].user,
@@ -106,6 +108,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'author',)
 
     def validate(self, obj):
+        """Фукнция валидации полей при создании рецепта."""
+
         for field in ['name', 'text', 'cooking_time']:
             if not obj.get(field):
                 raise serializers.ValidationError(
@@ -128,6 +132,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return obj
 
     def tags_and_ingredients_set(self, recipe, tags, ingredients):
+        """Создание связей ингредиентов и тегов с рецептом."""
+
         recipe.tags.set(tags)
         RecipeIngredient.objects.bulk_create(
             [RecipeIngredient(
@@ -138,6 +144,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        """Функция создания рецепта."""
+
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(author=self.context['request'].user,
@@ -146,6 +154,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        """Функция обновления рецепта."""
+
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
@@ -190,6 +200,22 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'text',
                   'cooking_time',)
 
+    def get_is_in_shopping_cart(self, obj):
+        """Функция проверки на наличие рецепта в корзине."""
+
+        user = self.context['request'].user
+        return user.is_authenticated and ShoppingCart.objects.filter(
+            user=user,
+            recipe=obj.id).exists()
+
+    def get_is_favorited(self, obj):
+        """Функция проверки на наличие рецепта в избранном."""
+
+        user = self.context['request'].user
+        return user.is_authenticated and Favorite.objects.filter(
+            user=user,
+            recipe=obj).exists()
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["tags"] = TagSerializer(
@@ -199,18 +225,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             instance.recipe_ingredient.all(),
             many=True).data
         return rep
-
-    def get_is_in_shopping_cart(self, obj):
-        user = self.context['request'].user
-        return user.is_authenticated and ShoppingCart.objects.filter(
-            user=user,
-            recipe=obj.id).exists()
-
-    def get_is_favorited(self, obj):
-        user = self.context['request'].user
-        return user.is_authenticated and Favorite.objects.filter(
-            user=user,
-            recipe=obj).exists()
 
 
 class RecipeSubscribeSerializer(serializers.ModelSerializer):
@@ -255,12 +269,16 @@ class SubscribeSerializer(serializers.ModelSerializer):
                   'recipes_count',)
 
     def get_is_subscribed(self, obj):
+        """Функция проверки на наличия в подписках."""
+
         return Subscribe.objects.filter(
             user=obj.user,
             author=obj.author
         ).exists()
 
     def get_recipes(self, obj):
+        """Функция получения рецептов."""
+
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
         queryset = Recipe.objects.filter(author=obj.author)
@@ -269,4 +287,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return RecipeSubscribeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
+        """Функция получения кол-ва рецептов."""
+
         return Recipe.objects.filter(author=obj.author).count()

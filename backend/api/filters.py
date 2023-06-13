@@ -41,6 +41,8 @@ class RecipeFilter(FilterSet):
         fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
 
     def _filter(self, queryset, name, value, param):
+        """Главная функция для проверки."""
+
         if value and self.request.user.is_authenticated:
             return queryset.filter(**{f'{param}__user': self.request.user})
         if not value and self.request.user.is_authenticated:
@@ -48,7 +50,11 @@ class RecipeFilter(FilterSet):
         return queryset
 
     def filter_is_favorited(self, queryset, name, value):
+        """Функция фильтрации-проверки на наличе в избранном."""
+
         return self._filter(queryset, name, value, param='favorite')
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
+        """Функция фильтрации-проверки на наличе в корзине."""
+
         return self._filter(queryset, name, value, param='cart')
