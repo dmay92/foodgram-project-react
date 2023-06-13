@@ -6,11 +6,11 @@
 ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
 ![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)
 
-Проект реализован на `Django` и `DjangoRestFramework`, доступен по [адресу](http://51.250.101.113).
+Проект реализован на `Django` и `DjangoRestFramework`, доступен по [адресу](http://51.250.101.113).  
 Документация доступна по [адресу](http://51.250.101.113/api/docs/redoc).
 
 # Продуктовый помощник Foodrgam
-Дипломный проект курса Backend-разработки Яндекс.Практикум.
+Дипломный проект курса Backend-разработки Яндекс.Практикум.  
 Проект представляет собой сайт-сервис для публикации рецептов различных блюд.
 
 ### Кратко о фнукционале сервиса:
@@ -113,9 +113,9 @@ sudo docker-compose exec backend python manage.py load_ingredients
 ```
 
 ## Автор
-Майоров Дмитрий Антонович
-Студент Яндекс.Практикум
-51-я когорта
-Python Backend-разработка
-Email - unic1992@yandex.ru
+Майоров Дмитрий Антонович  
+Студент Яндекс.Практикум  
+51-я когорта  
+Python Backend-разработка  
+Email - unic1992@yandex.ru  
 Telegram - @dmayd92
