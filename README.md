@@ -7,7 +7,7 @@
 ![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)
 
 Проект реализован на `Django` и `DjangoRestFramework`, доступен по [адресу](http://51.250.101.113).  
-Документация доступна по [адресу](http://51.250.101.113/api/docs/redoc).
+Документация доступна по [адресу](http://51.250.101.113/api/docs/redoc.html).
 
 # Продуктовый помощник Foodrgam
 Дипломный проект курса Backend-разработки Яндекс.Практикум.  
