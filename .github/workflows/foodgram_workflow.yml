@@ -55,7 +55,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           source: 'infra/docker-compose.yml, infra/nginx.conf'
-          target: './docker-compose.yml, ./nginx.conf'
+          target: './'
 
 
   build_and_push_backend_to_docker_hub:
