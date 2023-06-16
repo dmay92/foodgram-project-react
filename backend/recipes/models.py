@@ -6,7 +6,6 @@ from users.models import User
 
 class Ingredient(models.Model):
     """Класс модели ингредиентов."""
-
     name = models.CharField(
         verbose_name='Название ингредиента',
         max_length=200,
@@ -27,7 +26,6 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     """Класс модели тегов."""
-
     name = models.CharField(
         verbose_name='Тег',
         max_length=200,
@@ -61,7 +59,6 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     """Класс модели рецептов."""
-
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -77,9 +74,7 @@ class Recipe(models.Model):
         verbose_name='Изображение',
         upload_to='recipes/images/'
     )
-    text = models.TextField(
-        verbose_name='Описание'
-    )
+    text = models.TextField(verbose_name='Описание')
     cooking_time = models.PositiveSmallIntegerField(
         default=1,
         verbose_name='Время приготовления, мин',
@@ -103,7 +98,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        ordering = ('-id',)
+        ordering = ['-id']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -113,7 +108,6 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """Класс модели для связи рецептов и ингредиентов."""
-
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -147,7 +141,6 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     """Класс модели избранных рецептов."""
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -171,7 +164,6 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     """Класс модели корзины."""
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
